@@ -1,0 +1,18 @@
+streamlit>=1.28.0
+langchain>=0.1.0
+langchain-ollama>=0.1.0         # LLM integration for Ollama models
+langchain-huggingface>=0.0.1    # Embedding integration for HuggingFace models
+langchain-community>=0.0.20
+faiss-cpu>=1.7.4                # Vector database (Meta Open Source)
+sentence-transformers>=2.2.2
+python-dotenv>=1.0.0
+lxml>=4.9.0                     # XML parsing
+requests>=2.28.0
+
+# ── New: extended file-type support ──────────────────────────────────────────
+pypdf>=3.0.0                    # PDF
+pandas>=1.5.0                   # CSV, Excel
+openpyxl>=3.0.0                 # XLSX read/write backend for pandas
+python-docx>=0.8.11             # DOCX
+beautifulsoup4>=4.12.0          # HTML
+python-pptx>=0.6.21             # PPTX

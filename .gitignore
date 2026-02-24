@@ -1,0 +1,19 @@
+# Environment
+.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.Python
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Vector store (optional - remove if you want to include)
+vectorstore/faiss_index/

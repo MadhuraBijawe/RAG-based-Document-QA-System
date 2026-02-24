@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<company>
+    <name>TechCorp Industries</name>
+    <founded>2015</founded>
+    <headquarters>San Francisco, California</headquarters>
+
+    <description>
+        TechCorp Industries is a leading technology company specializing in cloud computing,
+        artificial intelligence, and data analytics solutions. Our mission is to empower
+        businesses with cutting-edge technology to drive innovation and growth.
+    </description>
+
+    <departments>
+        <department>
+            <name>Engineering</name>
+            <head>Dr. Sarah Chen</head>
+            <employees>250</employees>
+            <focus>Product development and infrastructure</focus>
+        </department>
+
+        <department>
+            <name>Research and Development</name>
+            <head>Prof. Michael Roberts</head>
+            <employees>75</employees>
+            <focus>AI research, machine learning models, and innovation</focus>
+        </department>
+
+        <department>
+            <name>Sales and Marketing</name>
+            <head>Jennifer Walsh</head>
+            <employees>120</employees>
+            <focus>Customer acquisition and brand development</focus>
+        </department>
+    </departments>
+
+    <products>
+        <product>
+            <name>CloudSync Pro</name>
+            <category>Cloud Storage</category>
+            <price>$29.99/month</price>
+            <description>Enterprise-grade cloud storage solution with automatic synchronization and encryption</description>
+        </product>
+
+        <product>
+            <name>DataInsight AI</name>
+            <category>Analytics</category>
+            <price>$199.99/month</price>
+            <description>AI-powered business intelligence platform for real-time data analysis</description>
+        </product>
+
+        <product>
+            <name>SecureVault</name>
+            <category>Security</category>
+            <price>$49.99/month</price>
+            <description>Advanced cybersecurity solution with threat detection and prevention</description>
+        </product>
+    </products>
+
+    <contact>
+        <email>info@techcorp.example.com</email>
+        <phone>+1-555-0123</phone>
+        <address>123 Innovation Drive, San Francisco, CA 94102</address>
+    </contact>
+</company>

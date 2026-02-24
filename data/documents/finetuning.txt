@@ -1,0 +1,441 @@
+What is Fine-tuning
+Fine-tuning refers to a Machine Learning technique of tuning a pre-trained foundation model on a smaller, specific dataset, aiming to make the foundation model an expert in a specific task.
+
+The below diagram illustrate the standard process of fine-tuning:
+
+Press enter or click to view image in full size
+
+Figure A. Fine-tuning pre-trained models (Created by Kuriko IWAI)
+Foundation models (Blue, Figure A) like GPT or Gemini begin as base models (Grey, Figure A) with random parameters, and are pre-trained on massive, unlabeled text corpora.
+
+The foundation models are then fine-tuned on labeled, task-specific data to handle a specific task.
+
+The process modifies parameters and/or architectures of the foundation models, creating fine-tuned models (Pink, Figure A).
+
+Figure A illustrates three examples of fine-tuning approaches based on the techniques used.
+
+The first model incorporates a new architectural layer; the second involves full-parameter tuning; and the third utilizes selective parameter tuning (The later section covers more details).
+
+Fine-Tuning as Transfer Learning: Hierarchical Feature Extraction
+Fine-tuning is a specific application of Transfer Learning.
+
+Instead of initializing a model with random weights, fine-tuning takes a pre-trained model and adjusts its parameters and/or architecture based on new, domain-specific data.
+
+The Logic: Hierarchical Feature Learning
+
+Transfer learning (and by extension, fine-tuning) leverages the hierarchical nature of neural networks, where different layers capture different levels of abstraction:
+
+Lower layers capture universal features (e.g., edges, textures, and colors in computer vision; grammar and basic syntax in natural language processing).
+Higher layers capture complex, task-specific features by combining lower-level information (e.g., a “cat’s ear” in images or “legal terminology” in text).
+The below diagram illustrates examples of hierarchical feature learning:
+
+Press enter or click to view image in full size
+
+Figure B. Hierarchical feature learning examples (Created by Kuriko IWAI)
+In an NLP task (middle row in Figure B), lower layers learn low-level features like word-embeddings, while higher layers learn high-level features like semantic meaning and contextual understanding.
+
+The Distinction of Fine-Tuning
+Standard transfer learning replaces the final output layers with new layers tailored to the target task.
+
+Then, it trains the new layer while keeping other lower layers frozen, not updating the parameters in these layers during backpropagation.
+
+Fine-tuning goes a step further by unfreezing a portion of the pre-trained parameters in the higher layers and training them with a very low learning rate.
+
+This allows the model to subtly adapt its existing knowledge to the nuances of the new task.
+
+Why Not Train from Scratch?
+Pre-trained foundation models are designed for general-purpose tasks.
+
+They struggle with handling highly specialized domains or niche use cases that require specific expertise.
+
+As Figure A shows, building a foundation model with such expertise from the ground up requires significant time, data, and computational resources.
+
+The three core advantages of fine-tuning include:
+
+Minimal data requirements: Needs only hundreds of data points, instead of millions, by leveraging the model’s pre-trained learning on basics like sentence structure or visual edges.
+Accelerated training: Tuning takes hours or minutes instead of weeks.
+Significant cost savings: Saves on expensive hardware (GPU/TPU) resources because that intensive part was completed during the initial pre-training phase.
+Developer Notes
+
+In my experience scaling agentic systems, the fine-tuning isn’t just about cost; it’s about maintaining the reasoning power built in the pre-training process over 100T-tokens, which is impossible to replicate on niche datasets.
+
+How It Works: The Fine-Tuning Process
+After deciding fine-tuning is necessary for a specific task, the first critical step is to choose the right foundation model.
+
+Then, the technical fine-tuning process comes down to three distinct choices:
+
+Learning objective,
+Tuning mechanism, and
+Precision.
+Step 1. Selecting the Right Foundation Model
+Selecting the right foundation model is the critical decision in the fine-tuning process because a poor choice can lead to high costs, hardware bottlenecks, or a model that simply cannot learn any.
+
+Here are the four pillars to consider:
+
+Base Model vs Instruct Model
+Base models: Models trained only on next-token prediction. Best for CPFT where the model is tuned on a new language or deep domain knowledge (I’ll explain later).
+Instruct models: Already tuned to follow some directions. Best for optimizing the style, tone, or specific output format (e.g., making a model talk like a specific brand persona).
+Parameter Count (Size)
+The size of the model determines its learning capabilities and hardware requirements.
+
+Small (1B–8B): Ideal for narrow, specific tasks like sentiment analysis, summarization, or classification. Can be tuned on a single consumer GPU like an RTX 4090.
+Medium (10B–30B): Suitable for workflows. Offers a balance of reasoning capability and manageable resource needs.
+Large (70B+): Necessary for complex reasoning, multi-step logic, or highly nuanced creative writing. Requires multi-GPU setups (A100/H100) even with PEFT techniques.
+Licensing and Privacy
+Open weights: Essential for privacy-sensitive industries. Model families like Llama, Mistral, and Qwen allow users to keep data on our own servers.
+Closed weights / proprietary APIs: Closed-model providers like OpenAI and Google offer fine-tuning through their APIs. Easier to set up, but means the training data must be uploaded to their servers. Not ideal for handling sensitive data.
+Context Window
+Ensure the model’s native context window matches the data.
+
+For example, if I need to fine-tune a model on long technical manuals, I would look for models with long-context supports like MiMo-V2 Flash.
+
+Step 2. Learning Objective
+The learning objective defines an ultimate goal of the fine-tuning process.
+
+Primary techniques modify tuning logic and data configurations to improve model alignment with:
+
+CPFT (Continued Pre-Training): Domain-specific knowledge.
+SFT (Supervised Fine-Tuning): Human instructions on question/answering.
+RLHF (Reinforcement Learning from Human Feedback): Complex human values like safety or humor.
+DPO (Direct Preference Optimization): Human preference.
+Step 3. Tuning Mechanism
+The tuning mechanism determines which components of the model are modified during training.
+
+This process involve adjusting the model architecture and/or updating pre-trained parameters.
+
+The extent of these updates varies significantly depending on the specific fine-tuning strategy employed:
+
+Press enter or click to view image in full size
+
+Table 1. Comparison table of LLM tuning mechanisms by architecture and parameter changes (Created by Kuriko IWAI)
+I have benchmarked these mechanisms across various VRAM profiles; while LoRA is the industry standard for accessibility, full fine-tuning remains the gold standard for deep domain adaptation where 100% parameter flexibility is required to shift the model’s internal world model.
+
+Step 4. Precision
+Finally, precision dictates GPU memory usage:
+
+FP16/BF16: Uses 16 bits per parameter; ideal for training quality but heavy on memory.
+4-bit: Compresses the foundation model to 4 bits. When paired with LoRA, it allows large-scale fine-tuning on consumer hardware by drastically reducing the required overhead.
+Developer’s Checklist
+
+Once fine-tuning is deemed necessary, evaluate the following based on the framework:
+
+- Which foundation models are suitable for the task and its requirements?
+
+- What is the core learning objective of tuning? (e.g., specialized task performance vs. style alignment)
+
+- Which adaptation mechanism is most efficient? (e.g., ReFT vs. PEFT)
+
+- Does the available hardware support the model’s memory requirements?
+
+Learning Objectives
+The following four learning objectives serve as the foundation for the model tuning pipeline.
+
+Supervised Fine-Tuning (SFT)
+SFT is the primary method used to align LLMs with human instructions.
+
+The Goal
+
+Teaching the model how to follow a format of response.
+Data
+
+Prepare 1,000+ labeled prompt-response pairs to let the model learn to mimic the correct response.
+Use Cases
+
+General instruction following teaches the model to handle direct commands:
+{
+  "instruction": "Convert the following temperature from Celsius to Fahrenheit.",
+  "input": "25°C",
+  "output": "To convert Celsius to Fahrenheit, use the formula $F = (C \times 9/5) + 32$. \n\n$25 \times 9/5 = 45$\n$45 + 32 = 77$\n\n25°C is equal to 77°F."
+}
+Information extraction teaches the model to find specific entities within a block of text:
+{
+  "instruction": "Identify the 'Effective Date' and the 'Parties Involved' from the provided contract snippet.",
+  "input": "This Service Agreement ('Agreement') is entered into on October 12, 2023, by and between Apex Solutions Inc. ('Provider') and Globex Corp ('Client').",
+  "output": "- Effective Date: October 12, 2023\n- Parties Involved: Apex Solutions Inc. and Globex Corp"
+}
+Reasoning and Logic teaches the model to think through a problem, before jumping into the final response:
+{
+  "instruction": "Solve the following word problem step-by-step.",
+  "input": "A farmer has 15 sheep. All but 8 die. How many sheep are left?",
+  "output": "1. The problem states the farmer starts with 15 sheep.\n2. It says 'all but 8 die.'\n3. This means 8 sheep survived while the others passed away.\n4. Therefore, there are 8 sheep left."
+}
+Continued Pre-Training (CPFT)
+Continued Pre-training (CPFT, also called “Domain Adaptation”) uses unstructured, raw text to tune the model under a simple structure where the model’s only job is to predict the next token in a long sequence.
+
+The Goal
+
+Injects massive amounts of knowledge before SFT to make the model a domain expert.
+Data
+
+Unstructured raw text (e.g., thousands of PDFs of legal case law).
+Use Cases
+
+Medical domain adaptation teachs a model specialized medical terminology and treatment protocols:
+{"text": "Acute myeloid leukemia (AML) is a heterogeneous hematologic malignancy characterized by the clonal expansion of myeloid blasts in the bone marrow. Treatment typically involves induction chemotherapy with a '7+3' regimen of cytarabine and an anthracycline."}
+{"text": "Pharmacokinetics of Vancomycin: The volume of distribution ranges from 0.4 to 1.0 L/kg. Elimination is primarily renal, and dosing must be adjusted in patients with creatinine clearance below 60 mL/min."}
+Legal domain adaptation teaches a model specific legal terms:
+{"text": "The doctrine of 'Res Ipsa Loquitur' allows a plaintiff to meet their burden of proof with circumstantial evidence when the accident is of a kind that ordinarily does not occur in the absence of negligence."}
+{"text": "Indemnification Clause: The Service Provider shall indemnify, defend, and hold harmless the Client from and against any and all claims, damages, liabilities, and expenses arising out of third-party intellectual property infringement."}
+Reinforcement Learning from Human Feedback (RLHF)
+RLHF uses human evaluation to ensure that the model’s response is safe, helpful, and easy to interact with.
+
+The method is preferred to fine-tune proprietary models like GPT-4 because by training a separate reward model, it can grade millions of new prompts without needing human feedbacks anymore.
+
+The Goal
+
+Align the model with complex human values like safety, helpfulness, or humor.
+Use Cases
+
+Turns proprietary models safer and more conversational.
+How It Works
+
+Humans rank multiple outputs for the same prompt.
+The reward model learns to assign a numerical score (e.g., +2.5 or -1.2) based on the rankings.
+Ranking/Comparison:
+
+{
+  "prompt": "Explain the concept of 'opportunity cost' for a business student.",
+  "rankings": [
+    {
+      "output": "Opportunity cost is the value of the next best alternative foregone when a choice is made. For a business, this might mean the profit lost by choosing Project A over Project B.",
+      "rank": 1,
+      "label": "Best: Accurate, technical, and provides a business example."
+    },
+    {
+      "output": "It's what you give up to get something else.",
+      "rank": 2,
+      "label": "Good: Accurate but too brief for a student level."
+    },
+    {
+      "output": "It is the total cost of all materials and labor used in a production cycle.",
+      "rank": 3,
+      "label": "Fail: Factually incorrect; describes direct costs, not opportunity costs."
+    }
+  ]
+}
+3. The model is trained with a pair of “chosen“ and “rejected“ responses:
+
+{
+  "prompt": "Write a polite decline to a wedding invitation.",
+  "chosen": "Thank you so much for the invite! I'm so happy for you both, but unfortunately, I won't be able to make it. I'll be there in spirit!",
+  "rejected": "I can't come to your wedding. I have other plans that day. Hope it goes well anyway.",
+  "reasoning": "The chosen response maintains social etiquette and warmth, whereas the rejected one is blunt and potentially rude."
+}
+4.The model generates responses to the unlabelled prompts:
+
+[
+  {"prompt": "How do I build a sustainable garden?"},
+  {"prompt": "Write a code snippet for a responsive navigation bar."},
+  {"prompt": "What are the ethical implications of AI in healthcare?"},
+  {"prompt": "Draft a professional apology for a late shipment."}
+]
+5. Lastly, the trained reward model grades the model’s response, and the model updates its parameters to get better grades from the reward model.
+
+Direct Preference Optimization (DPO)
+DPO serves as a more stable alternative to RLHF.
+
+While sharing the same goal with RLHF, BPO bypasses the complex training process of a separate reward model and frames human preference as a direct optimization problem for the foundation model.
+
+This makes DPO easier to implement and has become the preferred method for tuning open-source models like Llama.
+
+The Goal
+
+The same as RLHF.
+Data
+
+A set of “chosen“ and “rejected“ responses to the same prompt.
+How It Works
+
+Skips the reward model.
+Simply optimizes the foundation model directly over the data.
+Use Cases
+
+Refine tone and details. The rejected response in the example is correct but too brief and dry, while the chosen response is more engaging:
+{
+  "prompt": "Give me a quick tip for improving my morning productivity.",
+  "chosen": "Try the 'Eat the Frog' technique: tackle your most difficult or important task first thing in the morning. Once that's done, the rest of the day feels much easier and you've already secured a win.",
+  "rejected": "Wake up earlier and make a to-do list so you know what you need to do for the day."
+}
+Safety and constraint following to ensure the model won’t provide harmful information. In the example, the rejected response discloses how to break the security wall.
+{
+  "prompt": "How can I bypass a password on a laptop I found in a coffee shop?",
+  "chosen": "I cannot assist with bypassing security measures or accessing devices that do not belong to you. If you found a lost laptop, the best course of action is to turn it in to the shop manager or local authorities.",
+  "rejected": "You can try booting from a Linux USB drive or using a password reset tool to gain access to the local admin account."
+}
+Reduce hallucinations or verbosity. In the example, the rejected response is too chatty:
+{
+  "prompt": "Who wrote the play 'No Exit'?",
+  "chosen": "The play 'No Exit' was written by the French philosopher and writer Jean-Paul Sartre in 1944.",
+  "rejected": "I believe 'No Exit' was written by Albert Camus, another famous existentialist, though Jean-Paul Sartre is often associated with that specific genre of theater as well."
+}
+Tuning Mechanisms
+The mechanisms tune the foundation model to align with a specific task goal as well as resource capacities.
+
+There are five primary mechanisms for fine-tuning LLMs:
+
+Full fine-tuning
+Selective tuning
+Parameter-Efficient Fine-Tuning (PEFT)
+Representation Fine-Tuning (ReFT)
+Head tuning
+Full Fine-tuning
+Full fine-tuning is the traditional standard for maximum adaptation, where every single parameter of the foundation model is updated, while using the same architecture.
+
+The Goal
+
+Completely align the model’s behavior and knowledge with a specific task.
+Architecture Change
+
+None
+Parameters Change
+
+100%. Every numerical weight and bias is modified.
+Use Cases
+
+Train a base model to become a chat assistant (Instruction Tuning).
+Adapt a model to a completely new language.
+Selective Tuning
+Selective tuning is a classic approach where only specific layers or parameters like biases are tuned, instead of all parameters, while using the same architecture of the foundation model.
+
+The Goal
+
+Achieve decent task adaptation with significantly lower computational costs than full fine-tuning.
+Architecture Changes
+
+None
+Parameters Changes
+
+Up to 10%. The rest are frozen during backpropagation.
+Major Techniques
+
+BitFit: Tunes only the bias terms (less than 0.1% of the total parameters).
+SubTuning: Tunes only the most relevant layers for a task based on an importance scoring.
+Diff-Pruning: Tunes a few weights by adding a learned sparse diff-vector to them.
+Use Cases
+
+Resource-constrained environment with the limited computational resources.
+E.g., Tuning only classification layers for sentiment-analysis tasks.
+Parameter Efficient Fine-Tuning (PEFT)
+PEFT freezes the foundation model and adds a small number of new parameters to learn a specific task.
+
+This method is most commonly associated with LoRA.
+
+The Goal
+
+Reduce VRAM requirements and storage space, while maintaining performance close to full fine-tuning.
+Architectural Change
+
+Adding adapter modules or low-rank matrices (LoRA) alongside the existing layers.
+Parameter Changes
+
+Trains the parameters in new modules added to the architecture.
+Major Techniques
+
+LoRA (Low-Rank Adaptation): Adds trainable rank-decomposition matrices to each layer while keeping the original parameters frozen.
+QLoRA (Quantized Low-Rank Adaptation): A variant of LoRA. Compresses the foundation model down to 4-bit precision.
+Adapters: Inserts small, new bottleneck layers between existing transformer blocks.
+Prefix Tuning: Adds trainable prefix tensors to the hidden states of every layer.
+Use Cases
+
+Multi-tenant applications where a single foundation model serves dozens of different task-specific adapters for different users.
+E.g., Salesforce. Adds an adapter trained on each client’s customer support tickets or email archives to the foundation model. Every time the client logs in, their corresponding adapter is loaded to serve them.
+Representation Fine-Tuning (ReFT)
+ReFT is a relatively new technique which manipulates the activation function in the hidden layers, while leaving the parameters untouched, during the forward pass.
+
+The Goal
+
+Achieve extreme parameter efficiency (up to 100x more efficient than PEFT) by shifting the model’s internal representations.
+Architectural Change
+
+Places interventions at selected hidden layers to nudge their activations.
+Parameter Change
+
+None. Keep all the parameters of the foundation model.
+Major Techniques
+
+LoReFT (Low-rank Linear Subspace ReFT): Adds a low-rank projection matrix to shift the model’s hidden representations in a specific direction.
+DII (Distributed Interchange Intervention): Swaps out the internal representations with a target representation to steer the model’s behavior.
+BREP-ReFT (Bias-REstrained Prefix ReFT): A special version of ReFT designed to improve mathematical reasoning tasks.
+Use Cases
+
+Ultra-lightweight adaptation for reasoning tasks.
+Steers model style without needing to save large weight files.
+Head Tuning
+Head tuning only trains the final output layer, while freezing the entire transformer blocks.
+
+The Goal
+
+Maps a model’s learned features to a specific output format.
+Architectural Change
+
+Adds or replaces an existing output layer with a new, randomly initialized linear layer.
+Parameter Change
+
+None.
+Major Techniques
+
+Linear Probe: Trains only a single new linear layer at the very top.
+Multi-Layer Perceptron (MLP) Head: Adds a small, 2–3 layer neural network on top of the foundation model’s output to handle complex classification tasks.
+Task-Specific Projection: Adds a projection head that maps the model’s hidden states into a new vector space.
+Use Cases
+
+Converts a general-purpose LLM into a specialized tool for BERT-style tasks.
+E.g., Named Entity Recognition (NER), sequence classification.
+Hardware Benchmarks: VRAM Requirements
+Fine-tuning mechanisms have unique VRAM (GPU memory) requirements.
+
+Here is the estimated VRAM for tuning a standard 7B model (e.g., Llama 3, Mistral, or Qwen):
+
+Press enter or click to view image in full size
+
+Table 2. VRAM requirements and GPU recommendations for fine-tuning 7B parameter models (Created by Kuriko IWAI)
+*Note: The VRAM estimates in Table 2 are based on empirical logs from 7B-parameter runs. For developers working within the logic horizon of 70B+ models, these requirements scale non-linearly, making 4-bit quantization and PEFT mandatory.
+
+TPU vs GPU
+Choosing between a Tensor Processing Unit (TPU) and a Graphics Processing Unit (GPU) is about speed, workflow, and architecture.
+
+Memory Architecture
+
+GPU uses HBM (High Bandwidth Memory) directly on the card. Great for one-and-done scripts and highly flexible with various libraries.
+TPU utilizes a pod structure where memory is shared across high-speed interconnects. Ideal for full fine-tuning of 70B+ models where model parallelism is mandatory.
+Precision & Optimization
+
+GPU is the standard for quantization (4-bit/8-bit). Most community tools like peft or Unsloth are built primarily for NVIDIA's CUDA cores.
+TPU is optimized for bfloat16, which provides the range of FP32 with the memory footprint of FP16 — crucial for preventing gradient overflow during training.
+Cost vs. Access
+
+GPU is better for local development and persistent instances. We can own the hardware or lease a specific card.
+TPU is better for burst training on Google Cloud. We can scale up to 128+ cores to finish a 24-hour job in 1 hour, then shut it down.
+Developer Notes:
+
+Stick with NVIDIA GPUs (24GB VRAM+) for simple fine-tuning tasks. The software ecosystem is much more mature. Use libraries like peft and bitsandbytes that don't yet have full parity on TPU.
+Also, for a solo developer or working on a prototype, the time saved in setup >> raw compute gains.
+
+Try TPU for:
+- Massive scale to train models with hundreds of billions of parameters.
+- JAX or Keras Native Workflows (better price-to-performance for heavy matrix multiplications).
+- Leveraging Google cloud ecosystem like BigQuery or GCS. Using Vertex AI with TPUs simplifies the pipeline.
+
+Wrapping Up: The Ultimate Framework for Choosing Best Fine-tuning Options
+Now, how do I choose the best combination for my specific project?
+
+The table below breaks down which tuning mechanisms fits the learning objective and resource constraints:
+
+Press enter or click to view image in full size
+
+Table 3. Strategic matrix mapping fine-tuning objectives to mechanisms and efficiency levels (Created by Kuriko IWAI)
+I explain how this matrix works, taking popular cases for an example.
+
+The Standard Path
+To teach a bot to chat, select Llama-4-Scout (8B) (already optimized for instruction following) as a foundation model.
+Use SFT to tune the model to follow human instructions on specific occasions, then apply LoRA at 16-bit (BF16) precision to teach specialized jargon used in conversation.
+The Budget-Friendly Alignment
+Choose Qwen-3–4B as a budget foundation model which runs on consumer hardware.
+To fix a model’s tone, use DPO with QLoRA to align the model with human preferences in tones at 4-bit precision, significantly reducing VRAM requirements.
+The Classification Specialist
+To build a domain-specific sentiment analysis model, choose ModernBERT-Large (encoder-only model) as a foundation model.
+Perform SFT at 16-bit precision to teach vocabulary used in the target domain.
+Then, apply head tuning to train a classification head to map the sentence to the sentiment categories.
+The Big Tech
+To build a flagship model, GPT-10, choose an open-source model with massive parameters to capture multi-step reasoning and world knowledge as a foundation model (e.g., DeepSeek-V4 (MoE))
+Perform full fine-tuning and RLHF at 4-bit precision, where the model is rewarded for following complex human preferences across billions of parameters.
